@@ -30,10 +30,11 @@ public class MapAgent extends Agent
 		map.repaint();
 
 		// Add behaviours to handle the map
-		addBehaviour(new RedrwaBehaviour(this));
+		addBehaviour(new UpdateMapBehaviour(this));
 		addBehaviour(new ReadStateBehaviour());
 	}
 
+	@Override
 	protected void takeDown()
 	{
 		map.dispose();
@@ -41,9 +42,9 @@ public class MapAgent extends Agent
 		System.out.println("Map terminating.");
 	}
 
-	private class RedrwaBehaviour extends TickerBehaviour
+	private class UpdateMapBehaviour extends TickerBehaviour
 	{
-		public RedrwaBehaviour(Agent a)
+		public UpdateMapBehaviour(Agent a)
 		{
 			super(a, 5);
 		}
@@ -79,7 +80,6 @@ public class MapAgent extends Agent
 			}
 			catch (UnreadableException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
