@@ -27,6 +27,7 @@ public class Soldier extends Agent
 
 		p = new Position(x, y);
 		constraints = new HashMap<AID, Position>();
+		theta = new HashMap<AID, Position>();
 	}
 
 	@Override
@@ -38,6 +39,8 @@ public class Soldier extends Agent
 		// Add the waitForOrders behaviour
 		addBehaviour(new GreetGeneralBehaviour());
 		addBehaviour(new WaitForOrdersBehaviour());
+		addBehaviour(new ReadNeighboursStateBehaviour());
+		addBehaviour(new PublishStateBehaviour(this));
 		addBehaviour(new GoInFormationBehavior(this));
 	}
 
@@ -84,9 +87,12 @@ public class Soldier extends Agent
 			{
 
 			}
-			
-			//Clear message queue
-			while (myAgent.receive() != null);
+
+			// Clear message queue
+			MessageTemplate mt = MessageTemplate
+					.MatchPerformative(ACLMessage.INFORM);
+			while (myAgent.receive(mt) != null)
+				;
 		}
 
 		private Position threshold(Position delta)
@@ -141,6 +147,45 @@ public class Soldier extends Agent
 		private static final long serialVersionUID = -3849042796707872901L;
 	}
 
+	private class ReadNeighboursStateBehaviour extends CyclicBehaviour
+	{
+		@Override
+		public void action()
+		{
+
+			MessageTemplate mt = MessageTemplate
+					.MatchPerformative(ACLMessage.INFORM);
+			ACLMessage msg = myAgent.receive(mt);
+
+			if (msg != null)
+			{
+				try
+				{
+					AID sender = msg.getSender();
+
+					if (constraints.containsKey(sender))
+					{
+						Position pos = (Position) msg.getContentObject();
+						theta.put(sender, pos);
+					}
+
+				}
+				catch (UnreadableException e)
+				{
+					e.printStackTrace();
+				}
+			}
+			else
+			{
+				block();
+			}
+
+		}
+
+		private static final long serialVersionUID = 5601639205068026580L;
+
+	}
+
 	private class WaitForOrdersBehaviour extends CyclicBehaviour
 	{
 		@SuppressWarnings("unchecked")
@@ -155,6 +200,7 @@ public class Soldier extends Agent
 				if (msg != null)
 				{
 					constraints = (Map<AID, Position>) msg.getContentObject();
+					theta.clear();
 				}
 				else
 				{
@@ -168,7 +214,52 @@ public class Soldier extends Agent
 
 		}
 
+		// FIXME Debug method
+		/*
+		 * private void printOrders(Map<AID, Position> orders) { String
+		 * orderString = getAID().getLocalName() + " recieved: ";
+		 * 
+		 * for (Entry<AID, Position> entry : orders.entrySet()) { String name =
+		 * entry.getKey().getLocalName(); String position =
+		 * entry.getValue().toString(); orderString = orderString + name + " " +
+		 * position + " "; }
+		 * 
+		 * System.out.println(orderString); }
+		 */
+
 		private static final long serialVersionUID = -5269595491691804654L;
+
+	}
+
+	private class PublishStateBehaviour extends TickerBehaviour
+	{
+
+		public PublishStateBehaviour(Agent a)
+		{
+			super(a, 30);
+		}
+
+		@Override
+		protected void onTick()
+		{
+			for (AID neighbour : constraints.keySet())
+			{
+				try
+				{
+					ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+					msg.addReceiver(neighbour);
+					msg.setContentObject(p);
+					send(msg);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+		private static final long serialVersionUID = 2468710588448548066L;
 
 	}
 
@@ -183,12 +274,10 @@ public class Soldier extends Agent
 		@Override
 		protected void onTick()
 		{
-			if (constraints.size() > 0)
+			if (constraints.size() > 0 && theta.size() == constraints.size())
 			{
-				sendStateToNeighbours();
-				Map<AID, Position> theta = getNeighboursState();
 				Position nextPos = computeNextPosition(theta);
-				if (!p.equals(nextPos))
+				if (!atConvergence(nextPos))
 					addBehaviour(new MoveToBehaviour(nextPos));
 			}
 		}
@@ -216,46 +305,11 @@ public class Soldier extends Agent
 			return nextPos;
 		}
 
-		private Map<AID, Position> getNeighboursState()
+		private boolean atConvergence(Position nextPos)
 		{
-			MessageTemplate mt = MessageTemplate
-					.MatchPerformative(ACLMessage.INFORM);
-			Map<AID, Position> theta = new HashMap<AID, Position>();
-
-			while (theta.size() != constraints.size())
-			{
-				try
-				{
-					ACLMessage msg = myAgent.blockingReceive(mt);
-					theta.put(msg.getSender(),
-							(Position) msg.getContentObject());
-				}
-				catch (UnreadableException e)
-				{
-					e.printStackTrace();
-				}
-			}
-
-			return theta;
-		}
-
-		private void sendStateToNeighbours()
-		{
-			for (AID neighbour : constraints.keySet())
-			{
-				try
-				{
-					ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-					msg.addReceiver(neighbour);
-					msg.setContentObject(p);
-					send(msg);
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
-
-			}
+			double threshold = 0.001;
+			return Math.abs(p.x - nextPos.x) <= threshold
+					&& Math.abs(p.y - nextPos.y) <= threshold;
 		}
 
 		private static final long serialVersionUID = 7592000075808133319L;
@@ -277,6 +331,7 @@ public class Soldier extends Agent
 		}
 	}
 
+	private Map<AID, Position> theta;
 	private Map<AID, Position> constraints;
 	private Position p;
 

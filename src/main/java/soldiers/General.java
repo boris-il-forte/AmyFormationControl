@@ -6,11 +6,15 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import formation.Formation;
+import formation.SimpleCircle;
+import formation.SimpleRectangle;
 import utils.Position;
 
 public class General extends Agent
@@ -18,6 +22,8 @@ public class General extends Agent
 	public General()
 	{
 		p = new Position(2.5, 2.5);
+		//formation = new SimpleCircle(0.5);
+		formation = new SimpleRectangle(3, 0.5);
 	}
 
 	@Override
@@ -27,7 +33,7 @@ public class General extends Agent
 		soldiers = new HashSet<AID>();
 		sergeants = new HashSet<AID>();
 		
-		// Add lsisten behaviour
+		// Add behaviours
 		addBehaviour(new ListenBehaviour());
 		addBehaviour(new InformSergeantsBehaviour(this));
 	}
@@ -83,34 +89,19 @@ public class General extends Agent
 	{
 		@Override
 		public void action()
-		{
-			sergeants.clear();
+		{	
+			formation.computeFormation(soldiers, getAID());
 			
-			double d = 0.5;
-			double deltaAngle = 2 * Math.PI / soldiers.size();
-			double angle = 0;
-
 			for (AID soldier : soldiers)
 			{
-				//Add the current soldier to sergeants
-				sergeants.add(soldier);
-				
-				//compute delta for current soldier
-				Position deltaOpt = new Position(0, 0);
-				deltaOpt.x = d * Math.cos(angle);
-				deltaOpt.y = d * Math.sin(angle);
-				
-				angle += deltaAngle;
-
-				//create order
-				HashMap<AID, Position> orders = new HashMap<AID, Position>();
-				orders.put(getAID(), deltaOpt);
+				//get orders				
+				HashMap<AID, Position> orders = formation.getOrder(soldier);
 				
 				//send order
 				sendOrder(soldier, orders);
-
 			}
-
+			
+			sergeants = formation.getSeargeants();
 		}
 
 		private void sendOrder(AID id, HashMap<AID, Position> orders)
@@ -169,6 +160,9 @@ public class General extends Agent
 
 	Set<AID> soldiers;
 	Set<AID> sergeants;
+	
+	Formation formation;
+	
 	private Position p;
 
 	private static final long serialVersionUID = -3512892737673929107L;
