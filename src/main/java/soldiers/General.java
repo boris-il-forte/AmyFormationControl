@@ -6,7 +6,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,6 +59,13 @@ public class General extends Agent
 				{
 					soldiers.add(aid);
 					addBehaviour(new OrderBehaviour());
+				}
+				else if(content.equals("move"))
+				{
+					double x = Double.parseDouble(msg.getUserDefinedParameter("x"));
+					double y = Double.parseDouble(msg.getUserDefinedParameter("y"));
+					
+					p = new Position(x, y);
 				}
 
 				

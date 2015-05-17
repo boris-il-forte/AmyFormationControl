@@ -3,6 +3,9 @@ package utils;
 import jade.core.AID;
 
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Map.Entry;
@@ -12,7 +15,7 @@ import javax.swing.JPanel;
 
 import environment.MapAgent;
 
-public class Map extends JFrame
+public class Map extends JFrame implements MouseListener
 {
 	private MapAgent mapAgent;
 
@@ -32,7 +35,9 @@ public class Map extends JFrame
 			}
 		});
 
-		setContentPane(new DrawingSurface());
+		DrawingSurface drawing = new DrawingSurface();
+		drawing.addMouseListener(this);
+		setContentPane(drawing);
 		setSize(500, 500);
 		setResizable(false);
 	}
@@ -81,10 +86,41 @@ public class Map extends JFrame
 			g.drawString(s, x - stringLen / 2, y + stringHeight / 2);
 		}
 
-		private static final int scale = 100;
-
 		private static final long serialVersionUID = 3692117294885935974L;
 	}
 
 	private static final long serialVersionUID = 2465455386306850386L;
+
+	@Override
+	public void mouseClicked(MouseEvent e)
+	{
+		if(e.getButton() == MouseEvent.BUTTON1)
+		{
+			Point p = e.getPoint();
+			Position pos = new Position((double)p.x/scale, (double)p.y/scale);
+			mapAgent.setGeneralPosition(pos);
+		}
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e)
+	{
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e)
+	{
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e)
+	{
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e)
+	{
+	}
+	
+	private static final int scale = 100;
 }

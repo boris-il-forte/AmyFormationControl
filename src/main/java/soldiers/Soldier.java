@@ -73,8 +73,10 @@ public class Soldier extends Agent
 				while (!p.equals(target))
 				{
 					Thread.sleep(dt);
-					p.x += threshold(target.x - p.x);
-					p.y += threshold(target.y - p.y);
+					Position delta = threshold(new Position(target.x - p.x,
+							target.y - p.y));
+					p.x += delta.x;
+					p.y += delta.y;
 					sendPosition();
 				}
 			}
@@ -82,18 +84,30 @@ public class Soldier extends Agent
 			{
 
 			}
+			
+			while (myAgent.receive() != null);
 		}
 
-		private double threshold(double delta)
+		private Position threshold(Position delta)
 		{
-			double v = vMax * dt / 1000;
-			return Math.max(Math.min(delta, v), -v);
+			double norm = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
+			if (norm > vMax)
+			{
+				double c = vMax / norm;
+				Position deltaMax = new Position(c * delta.x, c * delta.y);
+				return deltaMax;
+			}
+			else
+			{
+				return delta;
+			}
+
 		}
 
 		private Position target;
 
-		private static final long dt = 100; // ms
-		private static final double vMax = 1; // m/s
+		private static final long dt = 10; // ms
+		private static final double vMax = 2.0 * dt / 1000.0; // m/ms
 
 		private static final long serialVersionUID = -4376132334575889969L;
 	}
@@ -105,7 +119,7 @@ public class Soldier extends Agent
 		{
 			try
 			{
-				Thread.sleep(500); // TODO change this
+				Thread.sleep(500); // TODO change this??
 				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 				msg.addReceiver(new AID("G", AID.ISLOCALNAME));
 				msg.setContent("greet");
@@ -140,12 +154,6 @@ public class Soldier extends Agent
 				if (msg != null)
 				{
 					constraints = (Map<AID, Position>) msg.getContentObject();
-
-					// FIXME DEBUG
-					System.out.print("agent " + getAID().getLocalName()
-							+ " recieved order: ");
-					System.out.println(constraints.values().iterator().next()
-							.toString());
 				}
 				else
 				{
@@ -154,7 +162,6 @@ public class Soldier extends Agent
 			}
 			catch (UnreadableException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -191,11 +198,6 @@ public class Soldier extends Agent
 
 			Position deltaPos = new Position(0, 0);
 
-			// FIXME debug
-			System.out.println("-- Agent " + getAID().getLocalName());
-			System.out.println("p " + p.toString());
-			System.out.println("alpha " + alpha);
-
 			for (Entry<AID, Position> entry : theta.entrySet())
 			{
 				AID id = entry.getKey();
@@ -204,18 +206,11 @@ public class Soldier extends Agent
 
 				deltaPos.x += alpha * (pj.x - p.x - delta.x);
 				deltaPos.y += alpha * (pj.y - p.y - delta.y);
-
-				// FIXME debug
-				System.out.println("delta " + delta.toString());
-				System.out.println("deltaPos " + deltaPos.toString());
 			}
 
 			Position nextPos = new Position(0, 0);
 			nextPos.x = p.x + deltaPos.x;
 			nextPos.y = p.y + deltaPos.y;
-
-			// FIXME Debug
-			System.out.println("nextPos " + nextPos.toString());
 
 			return nextPos;
 		}

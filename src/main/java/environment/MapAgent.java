@@ -70,7 +70,7 @@ public class MapAgent extends Agent
 				{
 					AID id = msg.getSender();
 					Position p = (Position) msg.getContentObject();
-					
+
 					positions.put(id, p);
 				}
 				else
@@ -87,6 +87,16 @@ public class MapAgent extends Agent
 
 		private static final long serialVersionUID = -5269595491691804654L;
 
+	}
+
+	public void setGeneralPosition(Position p)
+	{
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(new AID("G", AID.ISLOCALNAME));
+		msg.setContent("move");
+		msg.addUserDefinedParameter("x", "" + p.x);
+		msg.addUserDefinedParameter("y", "" + p.y);
+		send(msg);
 	}
 
 	private Map map;
