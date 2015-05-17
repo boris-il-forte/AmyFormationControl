@@ -85,6 +85,7 @@ public class Soldier extends Agent
 
 			}
 			
+			//Clear message queue
 			while (myAgent.receive() != null);
 		}
 
