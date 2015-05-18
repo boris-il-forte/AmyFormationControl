@@ -4,7 +4,6 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -26,6 +25,7 @@ public class Soldier extends Agent
 		double y = 5 * random.nextDouble();
 
 		p = new Position(x, y);
+		target = p;
 		constraints = new HashMap<AID, Position>();
 		theta = new HashMap<AID, Position>();
 	}
@@ -36,12 +36,13 @@ public class Soldier extends Agent
 		// Send agent initial position
 		sendPosition();
 
-		// Add the waitForOrders behaviour
+		// Add the behaviours
 		addBehaviour(new GreetGeneralBehaviour());
 		addBehaviour(new WaitForOrdersBehaviour());
 		addBehaviour(new ReadNeighboursStateBehaviour());
 		addBehaviour(new PublishStateBehaviour(this));
 		addBehaviour(new GoInFormationBehavior(this));
+		addBehaviour(new MoveToBehaviour(this));
 	}
 
 	@Override
@@ -61,38 +62,26 @@ public class Soldier extends Agent
 		System.out.println("Agent " + getAID().getLocalName() + " Killed");
 	}
 
-	private class MoveToBehaviour extends OneShotBehaviour
+	private class MoveToBehaviour extends TickerBehaviour
 	{
-		public MoveToBehaviour(Position target)
+
+		public MoveToBehaviour(Agent a)
 		{
-			this.target = target;
+			super(a, dt);
 		}
 
 		@Override
-		public void action()
+		protected void onTick()
 		{
-			try
+			if (!p.equals(target))
 			{
-				while (!p.equals(target))
-				{
-					Thread.sleep(dt);
-					Position delta = threshold(new Position(target.x - p.x,
-							target.y - p.y));
-					p.x += delta.x;
-					p.y += delta.y;
-					sendPosition();
-				}
-			}
-			catch (InterruptedException e)
-			{
-
+				Position delta = threshold(new Position(target.x - p.x,
+						target.y - p.y));
+				p.x += delta.x;
+				p.y += delta.y;
+				sendPosition();
 			}
 
-			// Clear message queue
-			MessageTemplate mt = MessageTemplate
-					.MatchPerformative(ACLMessage.INFORM);
-			while (myAgent.receive(mt) != null)
-				;
 		}
 
 		private Position threshold(Position delta)
@@ -110,8 +99,6 @@ public class Soldier extends Agent
 			}
 
 		}
-
-		private Position target;
 
 		private static final long dt = 10; // ms
 		private static final double vMax = 2.0 * dt / 1000.0; // m/ms
@@ -268,7 +255,7 @@ public class Soldier extends Agent
 
 		public GoInFormationBehavior(Agent a)
 		{
-			super(a, 100);
+			super(a, 10);
 		}
 
 		@Override
@@ -278,7 +265,7 @@ public class Soldier extends Agent
 			{
 				Position nextPos = computeNextPosition(theta);
 				if (!atConvergence(nextPos))
-					addBehaviour(new MoveToBehaviour(nextPos));
+					target = nextPos;
 			}
 		}
 
@@ -334,6 +321,7 @@ public class Soldier extends Agent
 	private Map<AID, Position> theta;
 	private Map<AID, Position> constraints;
 	private Position p;
+	private Position target;
 
 	private static Random random = new Random();
 	private static final long serialVersionUID = 8339256092734037514L;
