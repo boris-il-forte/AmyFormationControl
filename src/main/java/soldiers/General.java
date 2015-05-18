@@ -22,17 +22,17 @@ public class General extends Agent
 	public General()
 	{
 		p = new Position(2.5, 2.5);
-		//formation = new SimpleCircle(0.5);
-		formation = new SimpleRectangle(3, 0.5);
+		formation = new SimpleCircle(0.5);
+		// formation = new SimpleRectangle(3, 0.5);
 	}
 
 	@Override
 	protected void setup()
 	{
-		//Setup soldiers and seargeants structures
+		// Setup soldiers and seargeants structures
 		soldiers = new HashSet<AID>();
 		sergeants = new HashSet<AID>();
-		
+
 		// Add behaviours
 		addBehaviour(new ListenBehaviour());
 		addBehaviour(new InformSergeantsBehaviour(this));
@@ -42,6 +42,22 @@ public class General extends Agent
 	protected void takeDown()
 	{
 		System.out.println("General Killed");
+	}
+
+	private Formation getFormation(int n)
+	{
+		switch (n)
+		{
+		case 1:
+			return new SimpleCircle(0.5);
+
+		case 2:
+			return new SimpleRectangle(3, 0.5);
+
+		default:
+			return null;
+
+		}
 	}
 
 	private class ListenBehaviour extends CyclicBehaviour
@@ -66,15 +82,24 @@ public class General extends Agent
 					soldiers.add(aid);
 					addBehaviour(new OrderBehaviour());
 				}
-				else if(content.equals("move"))
+				else if (content.equals("move"))
 				{
-					double x = Double.parseDouble(msg.getUserDefinedParameter("x"));
-					double y = Double.parseDouble(msg.getUserDefinedParameter("y"));
-					
+					double x = Double.parseDouble(msg
+							.getUserDefinedParameter("x"));
+					double y = Double.parseDouble(msg
+							.getUserDefinedParameter("y"));
+
 					p = new Position(x, y);
 				}
+				else if (content.equals("formation"))
+				{
+					int n = Integer.parseInt(msg.getUserDefinedParameter("n"));
+					
+					formation = getFormation(n);
+					addBehaviour(new OrderBehaviour());
 
-				
+				}
+
 			}
 			else
 			{
@@ -89,18 +114,18 @@ public class General extends Agent
 	{
 		@Override
 		public void action()
-		{	
+		{
 			formation.computeFormation(soldiers, getAID());
-			
+
 			for (AID soldier : soldiers)
 			{
-				//get orders				
+				// get orders
 				HashMap<AID, Position> orders = formation.getOrder(soldier);
-				
-				//send order
+
+				// send order
 				sendOrder(soldier, orders);
 			}
-			
+
 			sergeants = formation.getSeargeants();
 		}
 
@@ -123,7 +148,7 @@ public class General extends Agent
 		private static final long serialVersionUID = -7766888612949047856L;
 
 	}
-	
+
 	private class InformSergeantsBehaviour extends TickerBehaviour
 	{
 
@@ -132,11 +157,10 @@ public class General extends Agent
 			super(a, 100);
 		}
 
-
 		@Override
 		protected void onTick()
 		{
-			for(AID sergeant : sergeants)
+			for (AID sergeant : sergeants)
 			{
 				try
 				{
@@ -149,20 +173,19 @@ public class General extends Agent
 				{
 					e.printStackTrace();
 				}
-				
+
 			}
-			
+
 		}
-		
-		
+
 		private static final long serialVersionUID = 529207599738831087L;
 	}
 
 	Set<AID> soldiers;
 	Set<AID> sergeants;
-	
+
 	Formation formation;
-	
+
 	private Position p;
 
 	private static final long serialVersionUID = -3512892737673929107L;

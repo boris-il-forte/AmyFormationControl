@@ -99,6 +99,15 @@ public class MapAgent extends Agent
 		send(msg);
 	}
 
+	public void setFormation(char c)
+	{
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(new AID("G", AID.ISLOCALNAME));
+		msg.setContent("formation");
+		msg.addUserDefinedParameter("n", "" + c);
+		send(msg);
+	}
+
 	private Map map;
 	private java.util.Map<AID, Position> positions;
 	private static final long serialVersionUID = -1684139020716145598L;

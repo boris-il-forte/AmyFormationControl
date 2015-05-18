@@ -4,6 +4,8 @@ import jade.core.AID;
 
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -15,7 +17,7 @@ import javax.swing.JPanel;
 
 import environment.MapAgent;
 
-public class Map extends JFrame implements MouseListener
+public class Map extends JFrame implements MouseListener, KeyListener
 {
 	private MapAgent mapAgent;
 
@@ -34,6 +36,8 @@ public class Map extends JFrame implements MouseListener
 				mapAgent.doDelete();
 			}
 		});
+		
+		addKeyListener(this);
 
 		DrawingSurface drawing = new DrawingSurface();
 		drawing.addMouseListener(this);
@@ -94,10 +98,11 @@ public class Map extends JFrame implements MouseListener
 	@Override
 	public void mouseClicked(MouseEvent e)
 	{
-		if(e.getButton() == MouseEvent.BUTTON1)
+		if (e.getButton() == MouseEvent.BUTTON1)
 		{
 			Point p = e.getPoint();
-			Position pos = new Position((double)p.x/scale, (double)p.y/scale);
+			Position pos = new Position((double) p.x / scale, (double) p.y
+					/ scale);
 			mapAgent.setGeneralPosition(pos);
 		}
 	}
@@ -121,6 +126,35 @@ public class Map extends JFrame implements MouseListener
 	public void mouseReleased(MouseEvent e)
 	{
 	}
-	
+
 	private static final int scale = 100;
+
+	@Override
+	public void keyPressed(KeyEvent e)
+	{
+
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e)
+	{
+
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e)
+	{
+		char k = e.getKeyChar();
+
+		switch (k)
+		{
+		case '1':
+		case '2':
+			mapAgent.setFormation(k);
+			break;
+
+		default:
+			break;
+		}
+	}
 }
