@@ -12,20 +12,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import formation.Formation;
-import formation.SimpleCircle;
-import formation.SimpleRectangle;
 import utils.Position;
+import formation.Formation;
+import formation.FormationManager;
 
 public class General extends Agent
 {
 	public General()
 	{
 		p = new Position(2.5, 2.5);
-		distance = 0.5;
-		cols = 3;
 		
-		formation = new SimpleCircle(distance);
+		manager = new FormationManager();
+		
+		formation = manager.getFormation(1);
 	}
 
 	@Override
@@ -44,22 +43,6 @@ public class General extends Agent
 	protected void takeDown()
 	{
 		System.out.println("General Killed");
-	}
-
-	private Formation getFormation(int n)
-	{
-		switch (n)
-		{
-		case 1:
-			return new SimpleCircle(0.5);
-
-		case 2:
-			return new SimpleRectangle(3, 0.5);
-
-		default:
-			return null;
-
-		}
 	}
 
 	private class ListenBehaviour extends CyclicBehaviour
@@ -97,25 +80,23 @@ public class General extends Agent
 				{
 					int n = Integer.parseInt(msg.getUserDefinedParameter("n"));
 					
-					formation = getFormation(n);
+					formation = manager.getFormation(n);
 					addBehaviour(new OrderBehaviour());
 
 				}
 				else if (content.equals("distance"))
-				{
-					if (msg.getUserDefinedParameter("s").equals("+"))
-					{
-						distance += 0.1;
-					}
-					else if (msg.getUserDefinedParameter("s").equals("-"))
-					{
-						distance -= 0.1;
-					}
+				{			
+					boolean increment = msg.getUserDefinedParameter("s").equals("+");
 					
-					formation = new SimpleCircle(distance); //FIXME
-					
+					formation = manager.changeDistance(increment);
 					addBehaviour(new OrderBehaviour());
-
+				}
+				else if (content.equals("cols"))
+				{
+					boolean increment = msg.getUserDefinedParameter("s").equals("+");
+					
+					formation = manager.changeCols(increment);
+					addBehaviour(new OrderBehaviour());
 				}
 
 			}
@@ -202,8 +183,7 @@ public class General extends Agent
 	Set<AID> soldiers;
 	Set<AID> sergeants;
 
-	double distance;
-	int cols;
+	FormationManager manager;
 	Formation formation;
 
 	private Position p;

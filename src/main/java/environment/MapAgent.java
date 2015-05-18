@@ -110,19 +110,30 @@ public class MapAgent extends Agent
 	
 	public void incrementDistance()
 	{
-		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-		msg.addReceiver(new AID("G", AID.ISLOCALNAME));
-		msg.setContent("distance");
-		msg.addUserDefinedParameter("s", "+");
-		send(msg);
+		sendFormationMessage("distance", "+");
+	}
+
+	public void decrementDistance()
+	{
+		sendFormationMessage("distance", "-");
 	}
 	
-	public void decrementDistance()
+	public void incrementCols()
+	{
+		sendFormationMessage("cols", "+");
+	}
+
+	public void decrementCols()
+	{
+		sendFormationMessage("cols", "-");
+	}
+
+	private void sendFormationMessage(String parameter, String sign)
 	{
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.addReceiver(new AID("G", AID.ISLOCALNAME));
-		msg.setContent("distance");
-		msg.addUserDefinedParameter("s", "-");
+		msg.setContent(parameter);
+		msg.addUserDefinedParameter("s", sign);
 		send(msg);
 	}
 

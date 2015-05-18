@@ -1,1 +1,1 @@
-http://Portatile-Dave.homenet.telecomitalia.it:7778/acc
+http://Debian-Dave.homenet.telecomitalia.it:7778/acc
