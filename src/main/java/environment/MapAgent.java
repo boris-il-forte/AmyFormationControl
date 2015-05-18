@@ -107,6 +107,24 @@ public class MapAgent extends Agent
 		msg.addUserDefinedParameter("n", "" + c);
 		send(msg);
 	}
+	
+	public void incrementDistance()
+	{
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(new AID("G", AID.ISLOCALNAME));
+		msg.setContent("distance");
+		msg.addUserDefinedParameter("s", "+");
+		send(msg);
+	}
+	
+	public void decrementDistance()
+	{
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(new AID("G", AID.ISLOCALNAME));
+		msg.setContent("distance");
+		msg.addUserDefinedParameter("s", "-");
+		send(msg);
+	}
 
 	private Map map;
 	private java.util.Map<AID, Position> positions;

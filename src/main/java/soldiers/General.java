@@ -22,8 +22,10 @@ public class General extends Agent
 	public General()
 	{
 		p = new Position(2.5, 2.5);
-		formation = new SimpleCircle(0.5);
-		// formation = new SimpleRectangle(3, 0.5);
+		distance = 0.5;
+		cols = 3;
+		
+		formation = new SimpleCircle(distance);
 	}
 
 	@Override
@@ -96,6 +98,22 @@ public class General extends Agent
 					int n = Integer.parseInt(msg.getUserDefinedParameter("n"));
 					
 					formation = getFormation(n);
+					addBehaviour(new OrderBehaviour());
+
+				}
+				else if (content.equals("distance"))
+				{
+					if (msg.getUserDefinedParameter("s").equals("+"))
+					{
+						distance += 0.1;
+					}
+					else if (msg.getUserDefinedParameter("s").equals("-"))
+					{
+						distance -= 0.1;
+					}
+					
+					formation = new SimpleCircle(distance); //FIXME
+					
 					addBehaviour(new OrderBehaviour());
 
 				}
@@ -184,6 +202,8 @@ public class General extends Agent
 	Set<AID> soldiers;
 	Set<AID> sergeants;
 
+	double distance;
+	int cols;
 	Formation formation;
 
 	private Position p;

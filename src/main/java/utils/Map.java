@@ -152,8 +152,22 @@ public class Map extends JFrame implements MouseListener, KeyListener
 		case '2':
 			mapAgent.setFormation(k);
 			break;
+			
+		case 'w':
+			mapAgent.incrementDistance();
+			break;
+			
+		case 's':
+			mapAgent.decrementDistance();
+			break;
 
-		default:
+		case 'a':
+			break;
+			
+		case 'd':
+			break;
+
+		default:			
 			break;
 		}
 	}
