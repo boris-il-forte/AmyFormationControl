@@ -19,6 +19,9 @@ public class FormationManager
 
 		case 2:
 			return new SimpleRectangle(cols, distance);
+			
+		case 3:
+			return new ComplexRectangle(cols, distance);
 
 		default:
 			return null;

@@ -150,6 +150,7 @@ public class Map extends JFrame implements MouseListener, KeyListener
 		{
 		case '1':
 		case '2':
+		case '3':
 			mapAgent.setFormation(k);
 			break;
 			
